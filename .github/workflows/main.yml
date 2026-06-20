@@ -92,7 +92,7 @@ jobs:
             exit 1
           fi
 
-          if ! unzip -tqq ytm.ipa > /dev/null 2>&1; then
+          if ! unzip -tq ytm.ipa > /dev/null 2>&1; then
             echo "::error::Validation failed: Downloaded file is not a readable IPA archive."
             exit 1
           fi
