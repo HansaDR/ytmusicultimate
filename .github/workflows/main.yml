@@ -92,12 +92,12 @@ jobs:
             exit 1
           fi
 
-          if ! unzip -tq ytm.ipa > /dev/null 2>&1; then
+          if ! unzip -t ytm.ipa > /dev/null 2>&1; then
             echo "::error::Validation failed: Downloaded file is not a readable IPA archive."
             exit 1
           fi
 
-          if ! unzip -Z1 ytm.ipa | grep -qE '^Payload/[^/]+\.app/'; then
+          if ! unzip -l ytm.ipa | grep -qE 'Payload/[^/]+\.app/'; then
             echo "::error::Validation failed: Downloaded archive does not contain a Payload/*.app bundle."
             exit 1
           fi
