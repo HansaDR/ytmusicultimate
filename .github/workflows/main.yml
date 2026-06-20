@@ -43,17 +43,6 @@ jobs:
         with:
           exclude_inputs: bundle_id,display_name
 
-      - name: Validate IPA URL
-        run: |
-          curl -L -r 0-1023 -o sample.part "${{ inputs.ipa_url }}" > /dev/null 2>&1
-          
-          file_type=$(file --mime-type -b sample.part)
-
-          if [[ "$file_type" != "application/x-ios-app" && "$file_type" != "application/zip" ]]; then
-            echo "::error::Validation failed: The file is not a valid IPA file. Detected type: $file_type."
-            exit 1
-          fi
-
       - name: Install Dependencies
         run: brew install make ldid
 
@@ -94,7 +83,24 @@ jobs:
         run: pipx install --force https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip
 
       - name: Download YouTube Music
-        run: wget "${{ inputs.ipa_url }}" --no-verbose -O ytm.ipa
+        run: |
+          wget "${{ inputs.ipa_url }}" --no-verbose -O ytm.ipa
+
+          file_type=$(file --mime-type -b ytm.ipa)
+          if [[ "$file_type" != "application/x-ios-app" && "$file_type" != "application/zip" && "$file_type" != "application/octet-stream" ]]; then
+            echo "::error::Validation failed: The downloaded file is not a valid IPA. Detected type: $file_type."
+            exit 1
+          fi
+
+          if ! unzip -tqq ytm.ipa > /dev/null 2>&1; then
+            echo "::error::Validation failed: Downloaded file is not a readable IPA archive."
+            exit 1
+          fi
+
+          if ! unzip -Z1 ytm.ipa | grep -qE '^Payload/[^/]+\.app/'; then
+            echo "::error::Validation failed: Downloaded archive does not contain a Payload/*.app bundle."
+            exit 1
+          fi
 
       - name: Build Tweak for Sideloading
         run: |
